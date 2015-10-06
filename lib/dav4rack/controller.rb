@@ -36,7 +36,7 @@ module DAV4Rack
     def url_format(resource)
       ret = URI.escape(resource.public_path)
 
-      #test
+      #Added this to make cadaver work
       ret = ret.gsub("(", "%28").gsub(")","%29")
 
       if resource.collection? and ret[-1,1] != '/'
@@ -48,6 +48,7 @@ module DAV4Rack
     # s:: string
     # Unescape URL string
     def url_unescape(s)
+      #Added this to make cadaver work
       s = s.gsub("%28", "(").gsub("%29", ")")
       URI.unescape(s)
     end
