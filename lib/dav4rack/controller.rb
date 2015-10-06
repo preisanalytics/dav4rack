@@ -18,7 +18,9 @@ module DAV4Rack
       @request = request
       @response = response
       @options = options
-      
+
+
+
       @dav_extensions = options.delete(:dav_extensions) || []
       @always_include_dav_header = options.delete(:always_include_dav_header)
       
@@ -33,6 +35,10 @@ module DAV4Rack
     # Escape URL string
     def url_format(resource)
       ret = URI.escape(resource.public_path)
+
+      #test
+      ret = ret.gsub("(", "%28").gsub(")","%29")
+
       if resource.collection? and ret[-1,1] != '/'
         ret += '/'
       end
@@ -42,6 +48,7 @@ module DAV4Rack
     # s:: string
     # Unescape URL string
     def url_unescape(s)
+      s = s.gsub("%28", "(").gsub("%29", ")")
       URI.unescape(s)
     end
     
@@ -156,7 +163,6 @@ module DAV4Rack
         elsif(destination == resource.public_path)
           Forbidden
         else
-          collection = resource.collection?
           dest = resource_class.new(destination, clean_path(destination), @request, @response, @options.merge(:user => resource.user))
           status = nil
           if(args.include?(:copy))
@@ -167,7 +173,19 @@ module DAV4Rack
           end
           response['Location'] = "#{scheme}://#{host}:#{port}#{url_format(dest)}" if status == Created
           # RFC 2518
-          if collection
+          return_status(dest,status)
+        end
+      end
+    end
+
+
+    def return_status(dest,status)
+
+      case request.user_agent
+        when "Microsoft-WebDAV-MiniRedir/6.1.7601"
+          status
+        else
+          if resource.collection?
             multistatus do |xml|
               xml.response do
                 xml.href "#{scheme}://#{host}:#{port}#{url_format(status == Created ? dest : resource)}"
@@ -177,9 +195,11 @@ module DAV4Rack
           else
             status
           end
-        end
       end
+
     end
+
+
     
     # Return response to PROPFIND
     def propfind
@@ -206,7 +226,7 @@ module DAV4Rack
               hsh
             }.compact
           else
-            raise BadRequest
+            properties = []
           end
         end
         multistatus do |xml|
