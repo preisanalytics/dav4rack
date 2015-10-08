@@ -36,7 +36,7 @@ module DAV4Rack
     def url_format(resource)
       ret = URI.escape(resource.public_path)
 
-      #Added this to make cadaver work
+      #Added this to make cadaver work. This fix works with Cadaver and the windows and mac clients.
       ret = ret.gsub("(", "%28").gsub(")","%29")
 
       if resource.collection? and ret[-1,1] != '/'
@@ -287,6 +287,7 @@ module DAV4Rack
     # NOTE: This will pass an argument hash to Resource#lock and
     # wait for a success/failure response. 
     def lock
+
       lockinfo = request_document.xpath("//#{ns}lockinfo")
       asked = {}
       asked[:timeout] = request.env['Timeout'].split(',').map{|x|x.strip} if request.env['Timeout']
