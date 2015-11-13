@@ -83,6 +83,7 @@ module DAV4Rack
     # Return response to GET
     def get
       if(resource.exist?)
+        #print_range(request)
         res = resource.get(request, response)
         if(res == OK && !resource.collection?)
           response['Etag'] = resource.etag
@@ -156,7 +157,7 @@ module DAV4Rack
       unless(resource.exist?)
         NotFound
       else
-        resource.lock_check if resource.supports_locking? && !args.include(:copy)
+        resource.lock_check if resource.supports_locking? && !args.include?(:copy)
         destination = url_unescape(env['HTTP_DESTINATION'].sub(%r{https?://([^/]+)}, ''))
         dest_host = $1
         if(dest_host && dest_host.gsub(/:\d{2,5}$/, '') != request.host)
@@ -616,6 +617,13 @@ module DAV4Rack
     # Converts element into proper text
     def xml_convert(xml, element)
       xml.doc.root.add_child(element)
+    end
+
+    def print_range(request)
+      Rails.logger.info "Handler: Print Range: "
+
+      Rails.logger.info "Range #{request.env.keys}"
+
     end
 
   end
