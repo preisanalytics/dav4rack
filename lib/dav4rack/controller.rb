@@ -354,17 +354,14 @@ module DAV4Rack
         authed = false
         uname = nil
         password = nil
-        if request.query_parameters[:api_key]
-          uname = "api_key"
-          password = request.query_parameters[:api_key]
-        elsif(request.env['HTTP_AUTHORIZATION'])
+        if(request.env['HTTP_AUTHORIZATION'])
           auth = Rack::Auth::Basic::Request.new(request.env)
           if(auth.basic? && auth.credentials)
             uname = auth.credentials[0]
             password = auth.credentials[1]
           end
         end
-        authed = resource.send(:authenticate, uname, password)
+        authed = resource.send(:authenticate, uname, password, request)
       end
       raise Unauthorized unless authed
     end
