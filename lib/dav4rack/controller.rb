@@ -14,7 +14,8 @@ module DAV4Rack
     # Create a new Controller.
     # NOTE: options will be passed to Resource
     def initialize(request, response, options={})
-      raise Forbidden if request.path_info.include?('..')
+      raise BadRequest if request.path_info =~ /\/\.\.?(\/|$)/
+
       @request = request
       @response = response
       @options = options
